@@ -18,7 +18,7 @@ public class TarjetaController {
     private TarjetaService tarjetaService;
 
     @GetMapping
-    public ResponseEntity<List<Tarjeta>> findAll() {
+    public ResponseEntity<List<Tarjeta>> readAll() {
         try {
             List<Tarjeta> tarjetas = tarjetaService.readAll();
             if (tarjetas.isEmpty()) {
@@ -31,11 +31,15 @@ public class TarjetaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tarjeta> findById(@PathVariable("id") Long id) {
+    public ResponseEntity<Tarjeta> read(@PathVariable("id") Long id) {
         try {
-            Tarjeta tarjeta = tarjetaService.read(id).get();
-            return new ResponseEntity<>(tarjeta, HttpStatus.OK);
-        }catch (Exception e) {
+            Optional<Tarjeta> tarjeta = tarjetaService.read(id);
+            if (tarjeta.isPresent()) {
+                return new ResponseEntity<>(tarjeta.get(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -57,6 +61,16 @@ public class TarjetaController {
             return new ResponseEntity<>(tarjetaService.edit(tarjeta), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            tarjetaService.delete(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

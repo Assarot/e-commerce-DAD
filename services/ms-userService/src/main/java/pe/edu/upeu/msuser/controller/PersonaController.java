@@ -18,7 +18,7 @@ public class PersonaController {
     private PersonaService personaService;
 
     @GetMapping
-    public ResponseEntity<List<Persona>> getAll() {
+    public ResponseEntity<List<Persona>> readAll() {
         try {
             List<Persona> personas = personaService.readAll();
             if (personas.isEmpty()) {
@@ -31,10 +31,14 @@ public class PersonaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Persona> getById(@PathVariable("id") Long id) {
+    public ResponseEntity<Persona> read(@PathVariable("id") Long id) {
         try {
-            Persona persona = personaService.read(id).get();
-            return new ResponseEntity<>(persona, HttpStatus.OK);
+            Optional<Persona> persona = personaService.read(id);
+            if (persona.isPresent()) {
+                return new ResponseEntity<>(persona.get(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -57,6 +61,16 @@ public class PersonaController {
             return new ResponseEntity<>(personaService.edit(persona), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+        try {
+            personaService.delete(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

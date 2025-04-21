@@ -5,37 +5,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upeu.msuser.domain.Direccion;
-import pe.edu.upeu.msuser.service.DireccionService;
+import pe.edu.upeu.msuser.domain.UserRol;
+import pe.edu.upeu.msuser.service.UserRolService;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/ms-user/direcciones")
-public class DireccionController {
+@RequestMapping("/ms-user/user-rol")
+public class UserRolController {
     @Autowired
-    private DireccionService direccionService;
+    private UserRolService userRolService;
 
     @GetMapping
-    public ResponseEntity<List<Direccion>> readAll() {
+    public ResponseEntity<List<UserRol>> readAll() {
         try {
-            List<Direccion> direcciones = direccionService.readAll();
-            if (direcciones.isEmpty()) {
+            List<UserRol> userRols = userRolService.readAll();
+            if (userRols.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-            return new ResponseEntity<>(direcciones, HttpStatus.OK);
+            return new ResponseEntity<>(userRols, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Direccion> read(@PathVariable("id") Long id) {
+    public ResponseEntity<UserRol> read(@PathVariable Long id) {
         try {
-            Optional<Direccion> direccion = direccionService.read(id);
-            if (direccion.isPresent()) {
-                return new ResponseEntity<>(direccion.get(), HttpStatus.OK);
+            Optional<UserRol> userRol = userRolService.read(id);
+            if (userRol.isPresent()) {
+                return new ResponseEntity<>(userRol.get(), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -45,20 +45,20 @@ public class DireccionController {
     }
 
     @PostMapping
-    public ResponseEntity<Direccion> create(@Valid @RequestBody Direccion direccion) {
+    public ResponseEntity<UserRol> create(@Valid @RequestBody UserRol userRol) {
         try {
-            Direccion dir = direccionService.create(direccion);
-            return new ResponseEntity<>(dir, HttpStatus.CREATED);
+            UserRol uRol = userRolService.create(userRol);
+            return new ResponseEntity<>(uRol, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody Direccion direccion, @PathVariable Long id) {
-        Optional<Direccion> d = direccionService.read(id);
-        if (d.isPresent()) {
-            return new ResponseEntity<>(direccionService.edit(direccion), HttpStatus.OK);
+    public ResponseEntity<?> update(@Valid @RequestBody UserRol userRol, @PathVariable Long id) {
+        Optional<UserRol> userRolOptional = userRolService.read(id);
+        if (userRolOptional.isPresent()) {
+            return new ResponseEntity<>(userRolService.edit(userRol), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -67,7 +67,7 @@ public class DireccionController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
-            direccionService.delete(id);
+            userRolService.delete(id);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
