@@ -1,0 +1,26 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+    import: ''  # 👈 Esto sigue siendo clave
+
+  cloud:
+    config:
+      enabled: false  # 👈 Desactiva el starter de Spring Cloud Config
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/productdb
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8082

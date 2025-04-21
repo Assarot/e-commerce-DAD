@@ -1,27 +1,30 @@
 version: '3.9'
 
 services:
+  # 🐘 PostgreSQL - Base de datos para ms-product-service
   postgresql:
     container_name: ms_pg_sql
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_USER: alibou
       POSTGRES_PASSWORD: alibou
+      POSTGRES_DB: productdb  # <-- Nombre ajustado al servicio real
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Expone puerto 5432 del contenedor como 5433 en host
     networks:
       - microservices-net
     restart: unless-stopped
 
+  # 🧰 pgAdmin - Interfaz gráfica para PostgreSQL
   pgadmin:
     container_name: ms_pgadmin
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
       - pgadmin:/var/lib/pgadmin
@@ -31,10 +34,61 @@ services:
       - microservices-net
     restart: unless-stopped
 
+  # ⚙️ Config Server - Centraliza configuraciones desde repositorio Git
+  config-server:
+    build:
+      context: ./services/config-server
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/Abel-FL/configutations.git
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # 🔍 Discovery Server (Eureka)
+  discovery-service:
+    build:
+      context: ./services/discovery
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # 📦 Product Service - Microservicio con base de datos propia
+  ms-product-service:
+    build:
+      context: ./services/ms-product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - config-server
+      - discovery-service
+      - postgresql
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/productdb
+      SPRING_DATASOURCE_USERNAME: alibou
+      SPRING_DATASOURCE_PASSWORD: alibou
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+# 🌐 Red compartida para comunicación entre contenedores
 networks:
   microservices-net:
     driver: bridge
 
+# 💾 Volúmenes persistentes
 volumes:
   postgres:
   pgadmin:

@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  config-server:
+    container_name: config-server
+    build: .
+    ports:
+      - "8888:8888"
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
